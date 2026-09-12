@@ -9,7 +9,10 @@ import torch
 import torch.nn.functional as F
 import networkx as nx
 import torch_geometric
-from scatter_letters import sl
+try:
+    from scatter_letters import sl  # only needed for --scatter_alphabets mode
+except Exception:
+    sl = None
 
 import seaborn as sns
 from sklearn.manifold import TSNE
@@ -52,6 +55,18 @@ from itertools import chain
 import pygsp
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# --- Compatibility shim for PyTorch >= 2.6 ---
+# This repo saves whole models via torch.save(model) and reloads them with
+# torch.load(...). PyTorch 2.6 changed torch.load's default weights_only to
+# True, which cannot unpickle full model objects. Restore legacy behavior.
+if not getattr(torch, "_ugc_load_patched", False):
+    _orig_torch_load = torch.load
+    def _compat_torch_load(*a, **k):
+        k.setdefault("weights_only", False)
+        return _orig_torch_load(*a, **k)
+    torch.load = _compat_torch_load
+    torch._ugc_load_patched = True
 
 import utils
 import GCN
@@ -1014,7 +1029,7 @@ if __name__ == "__main__":
         else:
           model = GCN.GCN_(feature_size, hidden_units, num_classes)
 
-        device = 'cuda'
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         model = model.to(device)
         data = data.to(device)
         data_coarsen = data_coarsen.to(device)

@@ -1,0 +1,34 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+build/
+dist/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Auto-downloaded datasets (Planetoid / Coauthor / CitationFull)
+data/
+newdata/
+
+# Model checkpoints written during training
+best_model.pt
+full_best_model.pt
+
+# Scratch
+*.log
+tmp/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# NOTE: heterophlic_data/ and results_and_plots/ are upstream content
+# and are intentionally NOT ignored.
