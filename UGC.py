@@ -108,6 +108,7 @@ def parse_args():
     parser.add_argument('--scatter_alphabets',type=str,required=False,default="None",help='making graphs from names and alphabets')
     parser.add_argument('--alpha',type=float,required=False,default=0.1,help='Heterophilic factor')
     parser.add_argument('--model_type',type=str,required=False,default='gcn',help='model type')
+    parser.add_argument('--save_coarsened',type=bool,required=False,default=False,help='Save the coarsened graph and partition matrix to coarsened_data_UGC/')
     
     args = parser.parse_args()
     return args
@@ -930,6 +931,20 @@ if __name__ == "__main__":
 
       data_coarsen = Data(x=cor_feat, edge_index = edge_index_corsen, y = labels_coarse)
       data_coarsen.edge_attr = edge_features
+
+      # Persist the coarsened graph (generic version of the per-dataset block
+      # below, which upstream leaves commented out). Also saves the partition
+      # matrix P_hat, i.e. the node -> supernode assignment.
+      if args.save_coarsened:
+          import os as _os
+          _os.makedirs('coarsened_data_UGC', exist_ok=True)
+          _tag = f'{args.dataset}_ratio{args.ratio}_alpha{args.alpha}'
+          torch.save(data_coarsen, f'coarsened_data_UGC/{_tag}_coarsened.pth')
+          torch.save(P_hat, f'coarsened_data_UGC/{_tag}_Phat.pth')
+          print(f'[saved] coarsened_data_UGC/{_tag}_coarsened.pth '
+                f'(x={tuple(cor_feat.shape)}, edges={edge_index_corsen.shape[1]})')
+          print(f'[saved] coarsened_data_UGC/{_tag}_Phat.pth '
+                f'(partition matrix {tuple(P_hat.shape)})')
 
       #### neurIPS rebuttal
       # if args.dataset == 'cora':
